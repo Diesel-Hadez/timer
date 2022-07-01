@@ -12,7 +12,12 @@ Window {
 	color: "#00000000"
 	Item {
 		id: timerRoot
-		property int seconds: 0
+		property int elapsed: 0
+		property int seconds: timerRoot.elapsed % 60
+		property int minutes: Math.floor(elapsed / 60) % 60
+		property int hours: Math.floor(elapsed / 3600)
+
+		// alias maybe?
 		property bool running: false
 		property bool started: false
 		property int interval: 0
@@ -28,7 +33,9 @@ Window {
 				font.family: "Helvetica"
 				font.pointSize: 24
 				anchors.centerIn: parent
-				text: timerRoot.seconds + "s" 
+				text: String(timerRoot.hours).padStart(2, '0') + ":" + 
+					String(timerRoot.minutes).padStart(2, '0') + ":" +
+					String(timerRoot.seconds).padStart(2, '0') 
 			}
 		}
 
@@ -37,13 +44,12 @@ Window {
 			interval: 1000
 			running: false
 			repeat: true
-			onTriggered: {timerRoot.seconds += 1}
+			onTriggered: {timerRoot.elapsed++;}
 		}
 
 		function reset() {
-			myTimer.running = false;
+			myTimer.running = started = false;
 			timerRoot.seconds = 0;
-			myTimer.running = true;
 		}
 
 		function pause() {
@@ -90,12 +96,9 @@ Window {
 			onTriggered: {
 				if (!timerRoot.started) {
 					timerRoot.started = true;
-					timerRoot.running = true;
-					timerRoot.reset();
-					return;
+					timerRoot.resume();
 				}
-
-				if (timerRoot.running) {
+				else if (timerRoot.running) {
 					timerRoot.pause();
 				}
 				else {
